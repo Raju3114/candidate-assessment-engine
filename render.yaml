@@ -1,47 +1,38 @@
 services:
-  # FastAPI Web Application Service
   - type: web
     name: ai-interview-backend
     env: python
     region: oregon
-    plan: starter
-    buildCommand: "pip install -r requirements.txt && alembic upgrade head"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+
+    buildCommand: |
+      pip install -r requirements.txt
+
+    startCommand: |
+      alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
     healthCheckPath: /health
+
     envVars:
       - key: ENVIRONMENT
         value: production
+
       - key: DEBUG
         value: "false"
+
       - key: DATABASE_URL
-        fromDatabase:
-          name: ai-interview-postgres
-          property: connectionString
+        sync: false
+
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: ai-interview-redis
-          property: connectionString
-      - key: SECRET_KEY
-        generateValue: true
-      - key: JWT_SECRET_KEY
-        generateValue: true
-      - key: JWT_REFRESH_SECRET
-        generateValue: true
+        sync: false
+
       - key: GEMINI_API_KEY
         sync: false
 
-  # Redis Managed Datastore
-  - type: redis
-    name: ai-interview-redis
-    plan: starter
-    region: oregon
-    ipAllowList: []
-    maxmemoryPolicy: allkeys-lru
+      - key: SECRET_KEY
+        generateValue: true
 
-databases:
-  # PostgreSQL Managed Database
-  - name: ai-interview-postgres
-    databaseName: ai_interview_db
-    plan: starter
-    region: oregon
+      - key: JWT_SECRET_KEY
+        generateValue: true
+
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
