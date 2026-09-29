@@ -1,0 +1,71 @@
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai_interview_fastapi
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/ai_interview_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production-min-32-chars
+      - JWT_SECRET_KEY=dev-jwt-secret-key-change-in-production-min-32-chars
+      - JWT_REFRESH_SECRET=dev-jwt-refresh-secret-key-change-in-production-min-32-chars
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-your-gemini-key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ai_platform_network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai_interview_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_interview_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ai_interview_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai_platform_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ai_interview_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai_platform_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  ai_platform_network:
+    driver: bridge
