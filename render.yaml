@@ -31,18 +31,17 @@ services:
       - key: GEMINI_API_KEY
         sync: false
 
-# PostgreSQL Managed Database
-databases:
-  - name: ai-interview-postgres
-    databaseName: ai_interview_db
-    user: postgres
-    plan: starter
-    region: oregon
-
-# Redis Managed Datastore
-services:
+  # Redis Managed Datastore
   - type: redis
     name: ai-interview-redis
     plan: starter
     region: oregon
     maxmemoryPolicy: allkeys-lru
+
+databases:
+  # PostgreSQL Managed Database
+  - name: ai-interview-postgres
+    databaseName: ai_interview_db
+    user: postgres
+    plan: starter
+    region: oregon
