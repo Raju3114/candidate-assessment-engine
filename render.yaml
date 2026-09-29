@@ -42,6 +42,5 @@ databases:
   # PostgreSQL Managed Database
   - name: ai-interview-postgres
     databaseName: ai_interview_db
-    user: postgres
     plan: starter
     region: oregon
